@@ -10,7 +10,7 @@ import { Model as ChatModel } from "./models/chat";
 import { Model as ChatWithTools } from "./models/chatWithTools";
 
 const workDir = "./tmp";
-const telegramToken = process.env.TELEGRAM_TOKEN!;
+const telegramToken = "6357892489:AAG_WBuEGFGV6oqJK3CWhnUQLcetnI5fAHs";
 
 const bot = new Telegraf(telegramToken);
 let model = new ChatWithTools();

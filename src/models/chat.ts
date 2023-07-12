@@ -11,13 +11,13 @@ import { ConversationChain } from "langchain/chains";
 import { Configuration } from "openai";
 import { OpenAIApi } from "openai";
 
-const openAIApiKey = process.env.OPENAI_API_KEY!;
+const openAIApiKey = "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";
 
 const params = {
   verbose: true,
   temperature: 1,
   openAIApiKey,
-  modelName: process.env.OPENAI_MODEL ?? "gpt-4",
+  modelName: process.env.OPENAI_MODEL ?? "gpt-3.5-turbo",
   maxConcurrency: 1,
   maxTokens: 1000,
   maxRetries: 5,

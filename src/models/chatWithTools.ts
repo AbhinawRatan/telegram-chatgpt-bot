@@ -1,17 +1,18 @@
-import { AgentExecutor, Tool, initializeAgentExecutor } from "langchain/agents";
-import { ChatOpenAI } from "langchain/chat_models";
+import { AgentExecutor,  initializeAgentExecutor, } from "langchain/agents";
+import { ChatOpenAI } from "langchain/chat_models/openai";
 import { BufferMemory } from "langchain/memory";
 import { Configuration } from "openai";
 import { OpenAIApi } from "openai";
 import { googleTool } from "./tools/google";
+import { Tool } from "langchain/dist/tools";
 
-const openAIApiKey = process.env.OPENAI_API_KEY!;
+const openAIApiKey = "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";
 
 const params = {
   verbose: true,
   temperature: 1,
   openAIApiKey,
-  modelName: process.env.OPENAI_MODEL ?? "gpt-4",
+  modelName: process.env.OPENAI_MODEL ?? "gpt-3.5-turbo",
   maxConcurrency: 1,
   maxTokens: 1000,
   maxRetries: 5,
