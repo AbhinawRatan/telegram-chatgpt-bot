@@ -1,5 +1,4 @@
-import { Tool } from "langchain/agents";
-import { ChatOpenAI } from "langchain/chat_models";
+import { ChatOpenAI } from "langchain/chat_models/openai";
 import {
   ChatPromptTemplate,
   HumanMessagePromptTemplate,
@@ -10,23 +9,28 @@ import { BufferMemory } from "langchain/memory";
 import { ConversationChain } from "langchain/chains";
 import { Configuration } from "openai";
 import { OpenAIApi } from "openai";
+import { PineconeClient } from "@pinecone-database/pinecone";
+import { PineconeStore } from "langchain/vectorstores/pinecone";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 
-const openAIApiKey = "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";
+const openAIApiKey = "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";
 
 const params = {
   verbose: true,
-  temperature: 1,
+  temperature: 0,
   openAIApiKey,
   modelName: process.env.OPENAI_MODEL ?? "gpt-3.5-turbo",
   maxConcurrency: 1,
-  maxTokens: 1000,
+  maxTokens: 10,
   maxRetries: 5,
 };
 
 export class Model {
-  public tools: Tool[] = [];
   public chain: ConversationChain;
   public openai: OpenAIApi;
+  public pineconeClient: PineconeClient;
+  public pineconeIndex: any;
+  public vectorStore: any;
 
   constructor() {
     const configuration = new Configuration({
@@ -36,9 +40,12 @@ export class Model {
     this.openai = new OpenAIApi(configuration);
     const model = new ChatOpenAI(params, configuration);
 
+    // Initialize Pinecone Client
+    this.pineconeClient = new PineconeClient();
+
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(
-        "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know."
+        "Please provide specific answers to questions related to diet and tinnitus, based on the information provided by the user."
       ),
       new MessagesPlaceholder("history"),
       HumanMessagePromptTemplate.fromTemplate("{input}"),
@@ -49,6 +56,21 @@ export class Model {
       prompt: chatPrompt,
       llm: model,
     });
+  }
+
+  public async init() {
+    await this.pineconeClient.init({
+      apiKey: "173b3325-ad25-4535-bbf1-96c11aa8f0ac",
+      environment: "us-west1-gcp-free",
+    });
+    console.log("Pinecone client initialized");
+    this.pineconeIndex = this.pineconeClient.Index("myproject");
+
+    // Initialize our vector store
+    this.vectorStore = await PineconeStore.fromExistingIndex(
+      new OpenAIEmbeddings(),
+      { pineconeIndex: this.pineconeIndex }
+    );
   }
 
   public async call(input: string) {

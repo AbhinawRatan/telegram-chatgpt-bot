@@ -7,13 +7,11 @@ import { postToWhisper } from "./lib/postToWhisper";
 import { textToSpeech } from "./lib/htApi";
 import { createReadStream, existsSync, mkdirSync } from "fs";
 import { Model as ChatModel } from "./models/chat";
-import { Model as ChatWithTools } from "./models/chatWithTools";
 
 const workDir = "./tmp";
 const telegramToken = "6357892489:AAG_WBuEGFGV6oqJK3CWhnUQLcetnI5fAHs";
-
 const bot = new Telegraf(telegramToken);
-let model = new ChatWithTools();
+let model = new ChatModel();
 
 if (!existsSync(workDir)) {
   mkdirSync(workDir);
@@ -28,15 +26,6 @@ bot.help((ctx) => {
 });
 
 bot.on("voice", async (ctx) => {
-
-  if(process.env.SERVE_THIS_USER_ONLY && parseInt(process.env.SERVE_THIS_USER_ONLY) !== ctx.message.chat.id){
-    console.log(`User ${ctx.message.chat.id.toString()} is not allowed to be served.`);
-    await ctx.reply(
-      "Sorry, you're not allowed to be served by me."
-    );
-    return;
-  }
-
   const voice = ctx.message.voice;
   await ctx.sendChatAction("typing");
 
@@ -70,6 +59,9 @@ bot.on("voice", async (ctx) => {
 
   console.log(response);
 
+  if (!response) {
+    response = "Sorry, I couldn't generate a response.";
+  }
   await ctx.reply(response);
 
   try {
@@ -99,8 +91,12 @@ bot.on("message", async (ctx) => {
 
   await ctx.sendChatAction("typing");
   try {
-    const response = await model.call(text);
-
+    let response = await model.call(text);
+    console.log ("response nhi aya bhai")
+    console.log(response);
+    if (!response) {
+      response = "Sorry, I couldn't generate a response.";
+    }
     await ctx.reply(response);
   } catch (error) {
     console.log(error);

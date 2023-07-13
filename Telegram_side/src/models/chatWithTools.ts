@@ -6,11 +6,11 @@ import { OpenAIApi } from "openai";
 import { googleTool } from "./tools/google";
 import { Tool } from "langchain/dist/tools";
 
-const openAIApiKey = "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";
+const openAIApiKey = "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";
 
 const params = {
   verbose: true,
-  temperature: 1,
+  temperature: 0,
   openAIApiKey,
   modelName: process.env.OPENAI_MODEL ?? "gpt-3.5-turbo",
   maxConcurrency: 1,
