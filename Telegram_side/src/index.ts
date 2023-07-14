@@ -92,7 +92,6 @@ bot.on("message", async (ctx) => {
   await ctx.sendChatAction("typing");
   try {
     let response = await model.call(text);
-    console.log ("response nhi aya bhai")
     console.log(response);
     if (!response) {
       response = "Sorry, I couldn't generate a response.";

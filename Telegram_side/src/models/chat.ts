@@ -20,8 +20,7 @@ const params = {
   temperature: 0,
   openAIApiKey,
   modelName: process.env.OPENAI_MODEL ?? "gpt-3.5-turbo",
-  maxConcurrency: 1,
-  maxTokens: 10,
+  maxTokens: 100,
   maxRetries: 5,
 };
 
@@ -45,7 +44,7 @@ export class Model {
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(
-        "Please provide specific answers to questions related to diet and tinnitus, based on the information provided by the user."
+        "You are a Tinnitus expert and User is someone with tinnitus who is coming to you for help. Research the documents thoroughly to frame your response. When user asks you questions you will give them very short and concise answers and tell them what to do as though they were having a one on one private conversation. You can also ask them followup questions on top of your answers in order to garner more information about my situation"
       ),
       new MessagesPlaceholder("history"),
       HumanMessagePromptTemplate.fromTemplate("{input}"),
