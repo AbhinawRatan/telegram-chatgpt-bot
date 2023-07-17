@@ -12,8 +12,9 @@ import { OpenAIApi } from "openai";
 import { PineconeClient } from "@pinecone-database/pinecone";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { response } from "express";
 
-const openAIApiKey = "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";
+const openAIApiKey = "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";
 
 const params = {
   verbose: true,
@@ -58,6 +59,7 @@ export class Model {
   }
 
   public async init() {
+    console.log("Initializing Pinecone client...");
     await this.pineconeClient.init({
       apiKey: "173b3325-ad25-4535-bbf1-96c11aa8f0ac",
       environment: "us-west1-gcp-free",
@@ -65,15 +67,34 @@ export class Model {
     console.log("Pinecone client initialized");
     this.pineconeIndex = this.pineconeClient.Index("myproject");
 
-    // Initialize our vector store
+    console.log("Initializing vector store...");
     this.vectorStore = await PineconeStore.fromExistingIndex(
       new OpenAIEmbeddings(),
       { pineconeIndex: this.pineconeIndex }
     );
+    console.log("Vector store initialized");
   }
 
   public async call(input: string) {
-    const output = await this.chain.call({ input });
-    return output.output;
+    console.log("Converting input to vector...");
+    const inputVector = await this.vectorStore.embeddings.embed(input);
+    console.log("Input vector:", inputVector);
+
+    console.log("Searching for most similar vectors in database...");
+    const results = await this.vectorStore.search(inputVector, { k: 1 });
+    console.log("Search results:", results);
+
+    const mostSimilarId = results[0].id;
+    console.log("Most similar ID:", mostSimilarId);
+
+    console.log("Retrieving data from Pinecone database...");
+    const mostSimilarData = await this.pineconeIndex.fetch(mostSimilarId);
+    console.log("Most similar data:", mostSimilarData);
+
+    console.log("Generating response using data from Pinecone database...");
+    const response= await this.chain.call({ input: mostSimilarData });
+    console.log("Generated response:", response.output);
+
+    return response.output;
   }
 }
