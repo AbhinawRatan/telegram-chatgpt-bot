@@ -6,7 +6,7 @@ import { OpenAIApi } from "openai";
 import { googleTool } from "./tools/google";
 import { Tool } from "langchain/dist/tools";
 
-const openAIApiKey = "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";
+const openAIApiKey = "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";
 
 const params = {
   verbose: true,

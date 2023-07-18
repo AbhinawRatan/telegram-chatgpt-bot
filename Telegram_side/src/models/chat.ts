@@ -1,3 +1,5 @@
+import { AgentExecutor,  initializeAgentExecutor, } from "langchain/agents";
+
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import {
   ChatPromptTemplate,
@@ -12,13 +14,12 @@ import { OpenAIApi } from "openai";
 import { PineconeClient } from "@pinecone-database/pinecone";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { response } from "express";
 
-const openAIApiKey = "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";
+const openAIApiKey = "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";
 
 const params = {
   verbose: true,
-  temperature: 0,
+  temperature: 0.7,
   openAIApiKey,
   modelName: process.env.OPENAI_MODEL ?? "gpt-3.5-turbo",
   maxTokens: 100,
@@ -31,6 +32,8 @@ export class Model {
   public pineconeClient: PineconeClient;
   public pineconeIndex: any;
   public vectorStore: any;
+  public executor?: AgentExecutor;
+
 
   constructor() {
     const configuration = new Configuration({
@@ -45,7 +48,7 @@ export class Model {
 
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(
-        "You are a Tinnitus expert and User is someone with tinnitus who is coming to you for help. Research the documents thoroughly to frame your response. When user asks you questions you will give them very short and concise answers and tell them what to do as though they were having a one on one private conversation. You can also ask them followup questions on top of your answers in order to garner more information about my situation"
+        "You are a Tinnitus expert and User is someone with tinnitus who is coming to you for help."
       ),
       new MessagesPlaceholder("history"),
       HumanMessagePromptTemplate.fromTemplate("{input}"),
@@ -72,28 +75,26 @@ export class Model {
       new OpenAIEmbeddings(),
       { pineconeIndex: this.pineconeIndex }
     );
+    console.log(this.vectorStore)
     console.log("Vector store initialized");
   }
 
   public async call(input: string) {
+    
     console.log("Converting input to vector...");
-    const inputVector = await this.vectorStore.embeddings.embed(input);
-    console.log("Input vector:", inputVector);
+
 
     console.log("Searching for most similar vectors in database...");
-    const results = await this.vectorStore.search(inputVector, { k: 1 });
+    
+    const results = await this.vectorStore.similaritySearch(input);
+    
     console.log("Search results:", results);
 
-    const mostSimilarId = results[0].id;
-    console.log("Most similar ID:", mostSimilarId);
 
-    console.log("Retrieving data from Pinecone database...");
-    const mostSimilarData = await this.pineconeIndex.fetch(mostSimilarId);
-    console.log("Most similar data:", mostSimilarData);
 
     console.log("Generating response using data from Pinecone database...");
-    const response= await this.chain.call({ input: mostSimilarData });
-    console.log("Generated response:", response.output);
+    const response= await this.chain!.call({ input});
+   
 
     return response.output;
   }
