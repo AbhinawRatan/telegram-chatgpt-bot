@@ -1,4 +1,4 @@
-import { AgentExecutor,  initializeAgentExecutor, } from "langchain/agents";
+import { AgentExecutor,  initializeAgentExecutor } from "langchain/agents";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { BufferMemory } from "langchain/memory";
 import { Configuration } from "openai";
@@ -35,6 +35,7 @@ export class Model {
   }
 
   public async call(input: string) {
+    
     if (!this.executor) {
       this.executor = await initializeAgentExecutor(
         this.tools,

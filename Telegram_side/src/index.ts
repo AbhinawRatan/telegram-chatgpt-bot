@@ -48,6 +48,7 @@ bot.on("voice", async (ctx) => {
 
   let response;
   try {
+    await model.init()
     response = await model.call(transcription);
   } catch (error) {
     console.log(error);
@@ -90,7 +91,9 @@ bot.on("message", async (ctx) => {
   console.log("Input: ", text);
 
   await ctx.sendChatAction("typing");
+  
   try {
+    await model.init()
     let response = await model.call(text);
     console.log(response);
     if (!response) {
